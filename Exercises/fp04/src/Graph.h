@@ -240,21 +240,19 @@ bool Graph<T>::removeVertex(const T &in) {
 template <class T>
 vector<T> Graph<T>::dfs() const {
 	// TODO (7 lines)
+
 	vector<T> res;
-/*
 
-	dfsVisit(this->vertexSet.at(0),res);
+	for(auto it = this->vertexSet.begin(); it != this->vertexSet.end();it++)
+		(*it)->visited = false;
 
-	for(auto it = v->adj.begin(); it != v->adj.end();it++){
+	for(size_t i = 0; i < vertexSet.size();i++){
 
-		if(!it->dest->visited){
-
-			dfsVisit(it->dest,res);
-		}
+		if(!(vertexSet.at(i)->visited ))
+			dfsVisit(vertexSet.at(i),res);
 
 	}
-*/
-	dfsVisit(this->vertexSet.at(0),res);
+
 	return res;
 }
 
@@ -267,7 +265,7 @@ void Graph<T>::dfsVisit(Vertex<T> *v, vector<T> & res) const {
 	// TODO (7 lines)
 
 	res.push_back(v->info);
-
+	v->visited = true;
 	for(auto it = v->adj.begin(); it != v->adj.end();it++){
 
 		if(!it->dest->visited){

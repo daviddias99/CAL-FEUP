@@ -213,9 +213,9 @@ bool Graph<T>::removeVertex(const T &in) {
 		(*it)->removeEdgeTo(vertex);
 
 		if((*it) == vertex){
-			delete *it;
-			it =vertexSet.erase(it);
-
+			//delete *it;
+			it = vertexSet.erase(it);
+			continue;
 		}
 
 
@@ -290,7 +290,35 @@ vector<T> Graph<T>::bfs(const T & source) const {
 	// TODO (22 lines)
 	// HINT: Use the flag "visited" to mark newly discovered vertices .
 	// HINT: Use the "queue<>" class to temporarily store the vertices.
-	vector<T> res;
+    vector<T> res;
+
+    for(auto it = this->vertexSet.begin(); it != this->vertexSet.end();it++)
+        (*it)->visited = false;
+
+    queue<Vertex<T>*> vertexQueue;
+
+    vertexQueue.push(findVertex(source));
+
+    while(!vertexQueue.empty()){
+
+        Vertex<T>*  currentVertex = vertexQueue.front();
+        vertexQueue.pop();
+
+        res.push_back(currentVertex->info);
+
+        for(int i = 0; i < currentVertex->adj.size(); i++){
+
+            if(!currentVertex->adj.at(i).dest->visited){
+
+                vertexQueue.push(currentVertex->adj.at(i).dest);
+                currentVertex->adj.at(i).dest->visited = true;
+            }
+        }
+    }
+
+
+
+
 	return res;
 }
 

@@ -88,11 +88,14 @@ template <class T>
 void checkAllPaths(Graph<T> &g, string expected) {
 	stringstream ss;
 	vector<Vertex<T>* > vs = g.getVertexSet();
+    string temp;
 	for(unsigned int i = 0; i < vs.size(); i++) {
 		ss << vs[i]->getInfo() << "<-";
 		if ( vs[i]->getPath() != NULL )
 			ss << vs[i]->getPath()->getInfo();
 		ss << "|";
+
+		 temp = ss.str();
 	}
 	ASSERT_EQUAL(expected, ss.str());
 }

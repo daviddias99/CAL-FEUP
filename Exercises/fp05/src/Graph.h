@@ -171,14 +171,70 @@ bool Graph<T>::addEdge(const T &sourc, const T &dest, double w) {
 
 template<class T>
 void Graph<T>::dijkstraShortestPath(const T &origin) {
-	// TODO
+
+    for(int i = 0; i < this->vertexSet.size();i++){
+
+        this->vertexSet.at(i)->dist = INF;
+        this->vertexSet.at(i)->path = NULL;
+        this->vertexSet.at(i)->visited = false;
+    }
+
+    Vertex<T>* startVertex = this->findVertex(origin);
+
+    if(!startVertex)
+        return;
+
+    startVertex->dist = 0;
+
+    MutablePriorityQueue<Vertex<T>> prior_queue;
+
+    prior_queue.insert(startVertex);
+    startVertex->visited = true;
+
+    while(!prior_queue.empty()) {
+
+        Vertex<T>* currentVertex = prior_queue.extractMin();
+
+        vector<Edge<T>> edges = currentVertex->adj;
+
+        for(int i = 0; i < edges.size(); i++){
+
+            Edge<T> currentAdj = edges.at(i);
+
+            if(currentAdj.dest->getDist() > currentVertex->getDist() + currentAdj.weight){
+
+                currentAdj.dest->dist = currentVertex->getDist() + currentAdj.weight;
+                currentAdj.dest->path = currentVertex;
+
+                if(!currentAdj.dest->visited){
+
+                    prior_queue.insert(currentAdj.dest);
+                    currentAdj.dest->visited = true;
+                }else{
+
+
+                    prior_queue.decreaseKey(currentAdj.dest);
+                }
+
+            }
+
+        }
+
+    }
+
 }
 
 template<class T>
-vector<T> Graph<T>::getPath(const T &origin, const T &dest) const{
-	vector<T> res;
-	// TODO
-	return res;
+vector<T> Graph<T>::getPath(const T &origin, const T &dest) const {
+
+    Vertex<T> *currentVertex = findVertex(dest);
+    vector<T> res = {currentVertex->getInfo()};
+
+    while ((currentVertex = currentVertex->getPath()) != NULL)
+        res.insert(res.begin(), currentVertex->getInfo());
+
+        return res;
+
 }
 
 template<class T>

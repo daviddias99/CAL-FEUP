@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.13)
+project(fp05)
+include_directories(../cute_lib)
+file(GLOB_RECURSE SOURCE_FILES "src/*.cpp")
+add_executable(fp05 ${SOURCE_FILES})

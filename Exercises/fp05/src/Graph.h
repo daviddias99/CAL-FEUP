@@ -97,6 +97,9 @@ Edge<T>::Edge(Vertex<T> *d, double w): dest(d), weight(w) {}
 template <class T>
 class Graph {
 	vector<Vertex<T> *> vertexSet;    // vertex set
+	vector<vector<int>> warshallPath;
+	vector<vector<double>> warshallDist;
+	vector<vector<double>> warshallWeight;
 
 public:
 	Vertex<T> *findVertex(const T &in) const;
@@ -115,6 +118,8 @@ public:
 	// Fp05 - all pairs
 	void floydWarshallShortestPath();
 	vector<T> getfloydWarshallPath(const T &origin, const T &dest) const;
+	void buildArrays();
+	int getVertexIndex(const T& info);
 
 };
 
@@ -239,12 +244,99 @@ vector<T> Graph<T>::getPath(const T &origin, const T &dest) const {
 
 template<class T>
 void Graph<T>::unweightedShortestPath(const T &orig) {
-	// TODO
+
+    for(int i = 0; i < this->vertexSet.size();i++){
+
+        this->vertexSet.at(i)->dist = INF;
+        this->vertexSet.at(i)->path = NULL;
+        this->vertexSet.at(i)->visited = false;
+    }
+
+    Vertex<T>* startVertex = this->findVertex(orig);
+
+    if(!startVertex)
+        return;
+
+    startVertex->dist = 0;
+
+    queue<Vertex<T>*> queue;
+
+    queue.push(startVertex);
+    startVertex->visited = true;
+
+    while(!queue.empty()) {
+
+        Vertex<T>* currentVertex = queue.front();
+        queue.pop();
+
+
+        vector<Edge<T>> edges = currentVertex->adj;
+
+        for(int i = 0; i < edges.size(); i++){
+
+            Edge<T> currentAdj = edges.at(i);
+
+            if(!currentAdj.dest->visited){
+
+                queue.push(currentAdj.dest);
+
+
+                currentAdj.dest->dist = currentVertex->getDist() + 1;
+                currentAdj.dest->path = currentVertex;
+                currentAdj.dest->visited = true;
+
+            }
+
+        }
+
+    }
+
+
+
 }
 
 template<class T>
 void Graph<T>::bellmanFordShortestPath(const T &orig) {
-	// TODO
+
+    for(int i = 0; i < this->vertexSet.size();i++){
+
+        this->vertexSet.at(i)->dist = INF;
+        this->vertexSet.at(i)->path = NULL;
+    }
+
+    Vertex<T>* startVertex = this->findVertex(orig);
+
+    if(!startVertex)
+        return;
+
+    startVertex->dist = 0;
+
+    for(int i = 1; i < this->vertexSet.size() ;i++){
+
+        for(int j = 0; j < this->vertexSet.size();j++){
+
+            Vertex<T>* currentVertex = vertexSet.at(j);
+
+            for(int k = 0; k < currentVertex->adj.size();k++){
+
+                Edge<T> currentEdge = currentVertex->adj.at(k);
+
+                if( (currentEdge.dest->getDist() > currentVertex->getDist() + currentEdge.weight)){
+
+                    currentEdge.dest->dist = currentVertex->getDist() + currentEdge.weight;
+                    currentEdge.dest->path = currentVertex;
+
+                }
+
+            }
+
+
+        }
+
+
+    }
+
+
 }
 
 
@@ -252,7 +344,30 @@ void Graph<T>::bellmanFordShortestPath(const T &orig) {
 
 template<class T>
 void Graph<T>::floydWarshallShortestPath() {
-	// TODO
+
+
+
+    for(int k = 0; k <= this->vertexSet.size();k++){
+
+        for(int i = 0; i < this->vertexSet.size();i++){
+
+            for(int j = 0; j < this->vertexSet.size();j++){
+
+
+                warshallDist[]
+
+
+
+
+            }
+
+
+        }
+
+    }
+
+
+
 }
 
 template<class T>
@@ -260,6 +375,84 @@ vector<T> Graph<T>::getfloydWarshallPath(const T &orig, const T &dest) const{
 	vector<T> res;
 	// TODO
 	return res;
+}
+
+template<class T>
+int Graph<T>::getVertexIndex(const T& info){
+
+    for(int i = 0; i < this->vertexSet.size();i++){
+
+        if(this->vertexSet.at(i)->getInfo() == info)
+            return i;
+
+    }
+
+    return -1;
+}
+
+template<class T>
+void Graph<T>::buildArrays(){
+
+    vector<vector<int>> warshallPath(this->vertexSet.size(),-1);
+    vector<vector<double>> warshallDist(this->vertexSet.size(),0);
+    vector<vector<double>> warshallWeight(this->vertexSet.size(),0);
+
+
+    for(int i = 0; i < this->vertexSet.size();i++){
+
+        vector<int> temp(this->vertexSet.size());
+        vector<double> temp2(this->vertexSet.size());
+        vector<double> temp3(this->vertexSet.size());
+
+        warshallPath.at(i) = temp;
+        warshallDist.at(i) = temp2;
+        warshallWeight.at(i) = temp3;
+
+    }
+
+    for(int i = 0; i < this->vertexSet.size();i++){
+
+        Vertex<T>* currentVertex = this->vertexSet.at(i);
+
+        for(int j = 0; j < currentVertex->adj.size();i++){
+
+                Edge<T> currentEdge = currentVertex->adj.at(j);
+
+                warshallWeight[i][this->getVertexIndex(currentEdge.dest->getInfo())] = currentEdge.weight;
+
+
+        }
+
+    }
+
+
+    for(int i = 0; i < this->vertexSet.size(); i++){
+
+        for(int j = 0; j < this->vertexSet.size(); j++){
+
+
+            if(warshallWeight[i][j] == 0){
+
+                if(i != j){
+
+                    warshallWeight[i][j] == INF;
+                }
+
+
+
+            }
+
+            warshallDist[i][j] = warshallWeight[i][j];
+
+        }
+
+    }
+
+
+
+
+
+
 }
 
 

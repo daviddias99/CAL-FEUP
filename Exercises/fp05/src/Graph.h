@@ -119,7 +119,7 @@ public:
 	void floydWarshallShortestPath();
 	vector<T> getfloydWarshallPath(const T &origin, const T &dest) const;
 	void buildArrays();
-	int getVertexIndex(const T& info);
+	int getVertexIndex(const T& info) const;
 
 };
 
@@ -346,18 +346,22 @@ template<class T>
 void Graph<T>::floydWarshallShortestPath() {
 
 
+    this->buildArrays();
 
-    for(int k = 0; k <= this->vertexSet.size();k++){
+    for(int k = 0; k < this->vertexSet.size();k++){
 
         for(int i = 0; i < this->vertexSet.size();i++){
 
             for(int j = 0; j < this->vertexSet.size();j++){
 
 
-                warshallDist[]
+                if(warshallDist[i][j] > warshallDist[i][k] + warshallDist[k][j]){
 
 
+                    warshallDist[i][j] = warshallDist[i][k] + warshallDist[k][j];
+                    warshallPath[i][j] = warshallPath[k][j];
 
+                }
 
             }
 
@@ -371,14 +375,53 @@ void Graph<T>::floydWarshallShortestPath() {
 }
 
 template<class T>
+void printVector(vector<vector<T>> v){
+
+
+    for(int i = 0; i < v.size(); i++){
+
+        for(int j = 0; j < v.at(0).size(); j++){
+
+
+            cout << v[i][j] << "    ";
+
+        }
+
+
+        cout << endl;
+    }
+
+
+    cout << endl;
+}
+
+template<class T>
 vector<T> Graph<T>::getfloydWarshallPath(const T &orig, const T &dest) const{
 	vector<T> res;
-	// TODO
+
+	int startIndex = this->getVertexIndex(orig);
+	int endIndex = this->getVertexIndex(dest);
+    int currentIndex = endIndex;
+
+    printVector(warshallPath);
+    printVector(warshallDist);
+    printVector(warshallWeight  );
+
+
+	res.insert(res.begin(),vertexSet.at(currentIndex)->info);
+
+	while(currentIndex != startIndex){
+
+	    currentIndex = warshallPath[orig][currentIndex];
+        res.insert(res.begin(),vertexSet.at(currentIndex)->info);
+	}
+
+
 	return res;
 }
 
 template<class T>
-int Graph<T>::getVertexIndex(const T& info){
+int Graph<T>::getVertexIndex(const T& info) const{
 
     for(int i = 0; i < this->vertexSet.size();i++){
 
@@ -393,16 +436,16 @@ int Graph<T>::getVertexIndex(const T& info){
 template<class T>
 void Graph<T>::buildArrays(){
 
-    vector<vector<int>> warshallPath(this->vertexSet.size(),-1);
-    vector<vector<double>> warshallDist(this->vertexSet.size(),0);
-    vector<vector<double>> warshallWeight(this->vertexSet.size(),0);
+    vector<vector<int>> warshallPath(this->vertexSet.size());
+    vector<vector<double>> warshallDist(this->vertexSet.size());
+    vector<vector<double>> warshallWeight(this->vertexSet.size());
 
 
     for(int i = 0; i < this->vertexSet.size();i++){
 
-        vector<int> temp(this->vertexSet.size());
-        vector<double> temp2(this->vertexSet.size());
-        vector<double> temp3(this->vertexSet.size());
+        vector<int> temp(this->vertexSet.size(),-1);
+        vector<double> temp2(this->vertexSet.size(),INF);
+        vector<double> temp3(this->vertexSet.size(),0);
 
         warshallPath.at(i) = temp;
         warshallDist.at(i) = temp2;
@@ -414,11 +457,12 @@ void Graph<T>::buildArrays(){
 
         Vertex<T>* currentVertex = this->vertexSet.at(i);
 
-        for(int j = 0; j < currentVertex->adj.size();i++){
+        for(int j = 0; j < currentVertex->adj.size();j++){
 
                 Edge<T> currentEdge = currentVertex->adj.at(j);
 
                 warshallWeight[i][this->getVertexIndex(currentEdge.dest->getInfo())] = currentEdge.weight;
+                warshallPath[i][this->getVertexIndex(currentEdge.dest->getInfo())] = i;
 
 
         }
@@ -438,18 +482,19 @@ void Graph<T>::buildArrays(){
                     warshallWeight[i][j] == INF;
                 }
 
-
-
             }
 
             warshallDist[i][j] = warshallWeight[i][j];
+            warshallPath[i][j] = i;
 
         }
 
     }
 
 
-
+    this->warshallPath = warshallPath;
+    this->warshallDist = warshallDist;
+    this->warshallWeight = warshallWeight;
 
 
 

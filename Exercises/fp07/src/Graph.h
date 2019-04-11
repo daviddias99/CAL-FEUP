@@ -364,8 +364,60 @@ vector<T> Graph<T>::getfloydWarshallPath(const T &orig, const T &dest) const{
 
 template <class T>
 vector<Vertex<T>* > Graph<T>::calculatePrim() {
-	// TODO
-	return vertexSet;
+
+
+
+
+    for(int i = 0; i < this->vertexSet.size();i++){
+
+        this->vertexSet.at(i)->dist = INF;
+        this->vertexSet.at(i)->path = NULL;
+        this->vertexSet.at(i)->visited = false;
+
+    }
+
+    MutablePriorityQueue<Vertex<T>> prior_queue;
+    prior_queue.insert(vertexSet.at(0));
+
+
+    while(!prior_queue.empty()) {
+
+        Vertex<T>* currentVertex = prior_queue.extractMin();
+        currentVertex->visited = true;
+
+        vector<Edge<T>> edges = currentVertex->adj;
+
+        for(int i = 0; i < edges.size(); i++){
+
+            Edge<T> currentAdj = edges.at(i);
+
+            if(!currentAdj.dest->visited){
+
+                if(currentAdj.dest->getDist() > currentAdj.weight){
+
+
+                    currentAdj.dest->path = currentVertex;
+
+
+                    if(currentAdj.dest->dist == INF)
+                        prior_queue.insert(currentAdj.dest);
+                    else
+                        prior_queue.decreaseKey(currentAdj.dest);
+
+                    currentAdj.dest->dist = currentAdj.weight;
+                }
+
+            }
+
+        }
+
+
+
+
+
+    }
+
+    return this->vertexSet;
 }
 
 

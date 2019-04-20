@@ -100,6 +100,9 @@ class Graph {
 	vector<vector<int>> warshallPath;
 	vector<vector<double>> warshallDist;
 	vector<vector<double>> warshallWeight;
+    double ** W = nullptr;   // dist
+    int **P = nullptr;   // path
+    int findVertexIdx(const T &in) const;
 
 public:
 	Vertex<T> *findVertex(const T &in) const;
@@ -120,6 +123,8 @@ public:
 	vector<T> getfloydWarshallPath(const T &origin, const T &dest) const;
 	void buildArrays();
 	int getVertexIndex(const T& info) const;
+
+    ~Graph();
 
 };
 
@@ -342,37 +347,6 @@ void Graph<T>::bellmanFordShortestPath(const T &orig) {
 
 /**************** All Pairs Shortest Path  ***************/
 
-template<class T>
-void Graph<T>::floydWarshallShortestPath() {
-
-
-    this->buildArrays();
-
-    for(int k = 0; k < this->vertexSet.size();k++){
-
-        for(int i = 0; i < this->vertexSet.size();i++){
-
-            for(int j = 0; j < this->vertexSet.size();j++){
-
-
-                if(warshallDist[i][j] > warshallDist[i][k] + warshallDist[k][j]){
-
-
-                    warshallDist[i][j] = warshallDist[i][k] + warshallDist[k][j];
-                    warshallPath[i][j] = warshallPath[k][j];
-
-                }
-
-            }
-
-
-        }
-
-    }
-
-
-
-}
 
 template<class T>
 void printVector(vector<vector<T>> v){
@@ -395,29 +369,79 @@ void printVector(vector<vector<T>> v){
     cout << endl;
 }
 
+template <class T>
+void deleteMatrix(T **m, int n) {
+    if (m != nullptr) {
+        for (int i = 0; i < n; i++)
+            if (m[i] != nullptr)
+                delete [] m[i];
+        delete [] m;
+    }
+}
+
+template <class T>
+Graph<T>::~Graph() {
+    deleteMatrix(W, vertexSet.size());
+    deleteMatrix(P, vertexSet.size());
+}
+
+/*
+ * Finds the index of the vertex with a given content.
+ */
+template <class T>
+int Graph<T>::findVertexIdx(const T &in) const {
+    for (unsigned i = 0; i < vertexSet.size(); i++)
+        if (vertexSet[i]->info == in)
+            return i;
+    return -1;
+}
+
+template<class T>
+void Graph<T>::floydWarshallShortestPath() {
+    unsigned n = vertexSet.size();
+    deleteMatrix(W, n);
+    deleteMatrix(P, n);
+    W = new double *[n];
+    P = new int *[n];
+    for (unsigned i = 0; i < n; i++) {
+        W[i] = new double[n];
+        P[i] = new int[n];
+        for (unsigned j = 0; j < n; j++) {
+            W[i][j] = i == j? 0 : INF;
+            P[i][j] = -1;
+        }
+        for (auto e : vertexSet[i]->adj) {
+            int j = findVertexIdx(e.dest->info);
+            W[i][j]  = e.weight;
+            P[i][j]  = i;
+        }
+    }
+
+    for(unsigned k = 0; k < n; k++)
+        for(unsigned i = 0; i < n; i++)
+            for(unsigned j = 0; j < n; j++) {
+                if(W[i][k] == INF || W[k][j] == INF)
+                    continue; // avoid overflow
+                int val = W[i][k] + W[k][j];
+                if (val < W[i][j]) {
+                    W[i][j] = val;
+                    P[i][j] = P[k][j];
+                }
+            }
+}
+
+
 template<class T>
 vector<T> Graph<T>::getfloydWarshallPath(const T &orig, const T &dest) const{
-	vector<T> res;
-
-	int startIndex = this->getVertexIndex(orig);
-	int endIndex = this->getVertexIndex(dest);
-    int currentIndex = endIndex;
-
-    printVector(warshallPath);
-    printVector(warshallDist);
-    printVector(warshallWeight  );
-
-
-	res.insert(res.begin(),vertexSet.at(currentIndex)->info);
-
-	while(currentIndex != startIndex){
-
-	    currentIndex = warshallPath[orig][currentIndex];
-        res.insert(res.begin(),vertexSet.at(currentIndex)->info);
-	}
-
-
-	return res;
+    vector<T> res;
+    int i = findVertexIdx(orig);
+    int j = findVertexIdx(dest);
+    if (i == -1 || j == -1 || W[i][j] == INF) // missing or disconnected
+        return res;
+    for ( ; j != -1; j = P[i][j])
+        res.push_back(vertexSet[j]->info);
+    reverse(res.begin(), res.end());
+    return res;
 }
 
 template<class T>
@@ -431,73 +455,6 @@ int Graph<T>::getVertexIndex(const T& info) const{
     }
 
     return -1;
-}
-
-template<class T>
-void Graph<T>::buildArrays(){
-
-    vector<vector<int>> warshallPath(this->vertexSet.size());
-    vector<vector<double>> warshallDist(this->vertexSet.size());
-    vector<vector<double>> warshallWeight(this->vertexSet.size());
-
-
-    for(int i = 0; i < this->vertexSet.size();i++){
-
-        vector<int> temp(this->vertexSet.size(),-1);
-        vector<double> temp2(this->vertexSet.size(),INF);
-        vector<double> temp3(this->vertexSet.size(),0);
-
-        warshallPath.at(i) = temp;
-        warshallDist.at(i) = temp2;
-        warshallWeight.at(i) = temp3;
-
-    }
-
-    for(int i = 0; i < this->vertexSet.size();i++){
-
-        Vertex<T>* currentVertex = this->vertexSet.at(i);
-
-        for(int j = 0; j < currentVertex->adj.size();j++){
-
-                Edge<T> currentEdge = currentVertex->adj.at(j);
-
-                warshallWeight[i][this->getVertexIndex(currentEdge.dest->getInfo())] = currentEdge.weight;
-                warshallPath[i][this->getVertexIndex(currentEdge.dest->getInfo())] = i;
-
-
-        }
-
-    }
-
-
-    for(int i = 0; i < this->vertexSet.size(); i++){
-
-        for(int j = 0; j < this->vertexSet.size(); j++){
-
-
-            if(warshallWeight[i][j] == 0){
-
-                if(i != j){
-
-                    warshallWeight[i][j] == INF;
-                }
-
-            }
-
-            warshallDist[i][j] = warshallWeight[i][j];
-            warshallPath[i][j] = i;
-
-        }
-
-    }
-
-
-    this->warshallPath = warshallPath;
-    this->warshallDist = warshallDist;
-    this->warshallWeight = warshallWeight;
-
-
-
 }
 
 

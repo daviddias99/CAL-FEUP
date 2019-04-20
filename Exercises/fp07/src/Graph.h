@@ -83,13 +83,16 @@ class Edge {
 	Vertex<T> *orig; 	// Fp07
 	Vertex<T> * dest;      // destination vertex
 	double weight;         // edge weight
+    int queueIndex = 0;
 
 	bool selected; // Fp07
 
 public:
 	Edge(Vertex<T> *o, Vertex<T> *d, double w);
+    bool operator<(Edge<T> & edge) const; // // required by MutablePriorityQueue
 	friend class Graph<T>;
 	friend class Vertex<T>;
+    friend class MutablePriorityQueue<Edge<T>>;
 
 	// Fp07
 	double getWeight() const;
@@ -101,6 +104,11 @@ Edge<T>::Edge(Vertex<T> *o, Vertex<T> *d, double w): orig(o), dest(d), weight(w)
 template <class T>
 double Edge<T>::getWeight() const {
 	return weight;
+}
+
+template <class T>
+bool Edge<T>::operator<(Edge<T> & edge) const {
+    return this->weight < edge.weight;
 }
 
 
@@ -366,8 +374,6 @@ template <class T>
 vector<Vertex<T>* > Graph<T>::calculatePrim() {
 
 
-
-
     for(int i = 0; i < this->vertexSet.size();i++){
 
         this->vertexSet.at(i)->dist = INF;
@@ -398,7 +404,6 @@ vector<Vertex<T>* > Graph<T>::calculatePrim() {
 
                     currentAdj.dest->path = currentVertex;
 
-
                     if(currentAdj.dest->dist == INF)
                         prior_queue.insert(currentAdj.dest);
                     else
@@ -411,10 +416,6 @@ vector<Vertex<T>* > Graph<T>::calculatePrim() {
 
         }
 
-
-
-
-
     }
 
     return this->vertexSet;
@@ -424,7 +425,57 @@ vector<Vertex<T>* > Graph<T>::calculatePrim() {
 
 template <class T>
 vector<Vertex<T>*> Graph<T>::calculateKruskal() {
-	// TODO
+
+    int edgesAccepted = 0;
+
+    MutablePriorityQueue<Edge<T>> prior_queue;
+
+    for(int i = 0; i < this->vertexSet.size();i++){
+
+
+        Vertex<T>* currentVertex = this->vertexSet.at(i);
+        currentVertex->path = NULL;
+        currentVertex->dist = i;
+
+        for(int j = 0; j < currentVertex->adj.size();j++){
+
+
+            Edge<T>* currentEdge = &currentVertex->adj.at(j);
+            prior_queue.insert(currentEdge);
+        }
+
+    }
+
+
+
+
+    while(edgesAccepted <  this->vertexSet.size() -1){
+
+        Edge<T>* currentEdge = prior_queue.extractMin();
+        double uSet = currentEdge->orig->dist;
+        double vSet = currentEdge->dest->dist;
+
+        if(uSet != vSet) {
+
+            edgesAccepted++;
+
+            for(int i = 0;  i < this->vertexSet.size(); i ++){
+
+                if(this->vertexSet.at(i)->dist == uSet){
+
+                    this->vertexSet.at(i)->dist = vSet;
+                }
+            }
+
+            if(currentEdge->dest->path == NULL)
+                currentEdge->dest->path = currentEdge->orig;
+            else
+                currentEdge->orig->path = currentEdge->dest;
+
+        }
+
+    }
+
 	return vertexSet;
 }
 

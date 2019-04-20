@@ -69,7 +69,7 @@ void testPrim() {
 	}
 
 	cout << endl << endl;
-	//cout << ss.str() << endl;
+	//cout << ss.str() << endl;s
 
 //	ASSERT_EQUAL("1<-|2<-1|3<-4|4<-2|5<-4|6<-7|7<-5|", ss.str());
 	ASSERT_EQUAL("1<-|2<-1|3<-1|4<-3|5<-4|6<-4|7<-5|", ss.str());

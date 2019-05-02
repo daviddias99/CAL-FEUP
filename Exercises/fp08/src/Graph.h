@@ -104,6 +104,12 @@ template <class T>
 class Graph {
 	vector<Vertex<T> *> vertexSet;
 	Vertex<T>* findVertex(const T &inf) const;
+	void resetFlows();
+    bool findAugmentationPath(T source, T target);
+    void testAndVisit(queue<Vertex<T>*>& vertexQueue, Edge<T>* edge, Vertex<T>* vertex, double residual);
+    double findMinResidualAlongPath(T source, T target);
+    void augmentFlowAlongPath(T source, T target, double f);
+
 public:
 	vector<Vertex<T> *> getVertexSet() const;
 	Vertex<T> *addVertex(const T &in);
@@ -146,6 +152,127 @@ vector<Vertex<T> *> Graph<T>::getVertexSet() const {
 }
 
 
+/* FLOW FUNCTIONS */
+
+template <class T>
+void Graph<T>::resetFlows(){
+
+    for(Vertex<T>* v : this->vertexSet){
+
+        for(Edge<T>* e : v->incoming){
+
+            e->flow = 0;
+        }
+
+        for(Edge<T>* e : v->outgoing){
+
+            e->flow = 0;
+        }
+    }
+
+
+}
+
+
+template <class T>
+bool Graph<T>::findAugmentationPath(T source, T target){
+
+    for(Vertex<T>* v : this->vertexSet)
+        v->visited = false;
+
+    Vertex<T>* startVertex = findVertex(source);
+    Vertex<T>* endVertex = findVertex(target);
+
+    queue<Vertex<T>*> vertexQueue;
+
+    vertexQueue.push(startVertex);
+
+    while(!vertexQueue.empty() && !endVertex->visited){
+
+        Vertex<T>* currentVertex = vertexQueue.front();
+        vertexQueue.pop();
+
+        for(Edge<T>* e : currentVertex->outgoing)
+            testAndVisit(vertexQueue,e,e->getDest(),e->capacity - e->getFlow());
+
+        for(Edge<T>* e : currentVertex->incoming)
+            testAndVisit(vertexQueue,e,e->orig,e->getFlow());
+    }
+
+    return endVertex->visited;
+}
+
+template <class T>
+void Graph<T>::testAndVisit(queue<Vertex<T>*>& vertexQueue, Edge<T>* edge, Vertex<T>* vertex, double residual){
+
+
+    if(!vertex->visited && residual > 0){
+
+        vertex->visited = true;
+        vertex->path = edge;
+        vertexQueue.push(vertex);
+
+    }
+
+}
+
+template <class T>
+double Graph<T>::findMinResidualAlongPath(T source, T target){
+
+    double f = INF;
+
+    Vertex<T>* vertex = findVertex(target);
+    Vertex<T>* sourceVertex = findVertex(source);
+
+    while(vertex->getInfo() != sourceVertex->getInfo()){
+
+        Edge<T>* pathEdge = vertex->path;
+
+        if(pathEdge->getDest()->getInfo() == vertex->getInfo()){
+
+            f < pathEdge->capacity - pathEdge->getFlow() ? f = f : f = pathEdge->capacity - pathEdge->getFlow();
+            vertex = pathEdge->orig;
+        }
+        else{
+
+            f < pathEdge->getFlow() ? f = f : f = pathEdge->getFlow();
+            vertex = pathEdge->dest;
+
+        }
+
+
+    }
+
+    return f;
+}
+
+template <class T>
+void Graph<T>::augmentFlowAlongPath(T source, T target, double f){
+
+    Vertex<T>* vertex = findVertex(target);
+    Vertex<T>* sourceVertex = findVertex(source);
+
+    while(vertex->getInfo() != sourceVertex->getInfo()){
+
+        Edge<T>* pathEdge = vertex->path;
+
+        if(pathEdge->getDest()->getInfo() == vertex->getInfo()){
+
+            pathEdge->flow += f;
+            vertex = pathEdge->orig;
+        }
+        else{
+
+            pathEdge->flow -= f;
+            vertex = pathEdge->dest;
+
+        }
+
+    }
+
+}
+
+
 /**
  * Finds the maximum flow in a graph using the Ford Fulkerson algorithm
  * (with the improvement of Edmonds-Karp).
@@ -156,7 +283,20 @@ vector<Vertex<T> *> Graph<T>::getVertexSet() const {
  */
 template <class T>
 void Graph<T>::fordFulkerson(T source, T target) {
-    // TODO
+
+
+    resetFlows();
+
+    while(findAugmentationPath(source,target)){
+
+        double f = findMinResidualAlongPath(source,target);
+        augmentFlowAlongPath(source,target,f);
+
+    }
+
+
+
+
 }
 
 
